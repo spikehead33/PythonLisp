@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pythonlisp"
+version = "0.1.0"
+description = "Lisp implementation in Python"
+authors = ["spikehead33 <ccspikehead33@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10.6"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.0.0"
+flake8 = "^6.0.0"
+bandit = "^1.7.4"
+pytest = "^7.2.1"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pythonlisp = "pythonlisp.main:main"
