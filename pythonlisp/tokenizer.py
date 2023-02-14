@@ -1,12 +1,11 @@
-from typing import Generator, Tuple, Union
-from collections import namedtuple, deque
+from collections import deque, namedtuple
 from enum import Enum
-
+from typing import Generator, Tuple, Union
 
 Offset = namedtuple("Offset", ["lineno", "column"])
-TokenKind = Enum("TokenKind",
-                 ["LEFTPAR", "RIGHTPAR", "NUMBER", "STRING",
-                  "SYMBOL", "EOF"])
+TokenKind = Enum(
+    "TokenKind", ["LEFTPAR", "RIGHTPAR", "NUMBER", "STRING", "SYMBOL", "EOF"]
+)
 Symbol = str
 String = str
 Number = Union[int, float]
@@ -43,35 +42,40 @@ def tokenize(source: str) -> Generator[Token, None, None]:
             kind = TokenKind.RIGHTPAR
             column += 1
             lexeme = ch
-        elif ch == "\"":
+        elif ch == '"':
             kind = TokenKind.STRING
             strbuffer: deque[str] = deque()
             for cursor in range(i, len(source)):
                 column += 1
                 strbuffer.append(source[cursor])
-                if (len(strbuffer) > 1 and strbuffer[-2] != "\\"
-                        and strbuffer[-1] == "\""):
+                if (
+                    len(strbuffer) > 1
+                    and strbuffer[-2] != "\\"
+                    and strbuffer[-1] == '"'
+                ):
                     break
                 if source[cursor] == "\n":
                     lineno += 1
                     column = 1
-            if strbuffer[-1] != "\"":
-                raise RuntimeError(
-                    f"unterminated string found in {lineno}:{column}")
-            lexeme = ''.join(strbuffer)
+            if strbuffer[-1] != '"':
+                raise RuntimeError(f"unterminated string found in {lineno}:{column}")
+            lexeme = "".join(strbuffer)
             skip = len(lexeme) - 1
             strbuffer.popleft()  # remove the \" in both ends
             strbuffer.pop()
-            value = ''.join(strbuffer).replace("\\\"", "\"")
+            value = "".join(strbuffer).replace('\\"', '"')
         else:  # Determine if the Token belongs to NUMBER/SYMBOL/UNKNOWN
             buffer: list[str] = []
             for cursor in range(i, len(source)):
-                if (source[cursor] == "(" or source[cursor] == ")"
-                        or source[cursor] in LINE_BREAKS):
+                if (
+                    source[cursor] == "("
+                    or source[cursor] == ")"
+                    or source[cursor] in LINE_BREAKS
+                ):
                     break
                 column += 1
                 buffer.append(source[cursor])
-            lexeme = ''.join(buffer)
+            lexeme = "".join(buffer)
             skip = len(lexeme) - 1
 
             try:

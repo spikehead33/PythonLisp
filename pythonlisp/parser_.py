@@ -7,13 +7,12 @@ List        := LeftParen { SExp } RightParen
 Atom        := Number | String | Symbol
 """
 
-from typing import Generator
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Generator, Optional, Union
+
 from pythonlisp.peekable import Peekable
-from pythonlisp.tokenizer import (
-    tokenize, Token, TokenKind, Value, Offset, Lexeme
-)
+from pythonlisp.tokenizer import (Lexeme, Offset, Token, TokenKind, Value,
+                                  tokenize)
 
 
 def is_tok_kind(token: Token, kind: TokenKind) -> bool:
@@ -46,8 +45,8 @@ class Number(AstNode):
 class String(AstNode):
     val: str
     pos: Optional[Offset]
-        
-        
+
+
 @dataclass(frozen=True)
 class Symbol(AstNode):
     val: str
@@ -104,9 +103,11 @@ class Parser:
         return Lisp(res)
 
     def parse_sexp(self, token: Token) -> SExp:
-        if (is_tok_kind(token, TokenKind.NUMBER)
+        if (
+            is_tok_kind(token, TokenKind.NUMBER)
             or is_tok_kind(token, TokenKind.STRING)
-                or is_tok_kind(token, TokenKind.SYMBOL)):
+            or is_tok_kind(token, TokenKind.SYMBOL)
+        ):
             return SExp(self.parse_atom(token))
         elif is_tok_kind(token, TokenKind.RIGHTPAR):
             raise ParserError
@@ -126,8 +127,8 @@ class Parser:
         elif is_tok_kind(token, TokenKind.STRING):
             return Atom(String(val, offset))
         elif is_tok_kind(token, TokenKind.SYMBOL):
-            if val == '#t' or val == '#f':
-                b = True if val == '#t' else False
+            if val == "#t" or val == "#f":
+                b = True if val == "#t" else False
                 return Atom(Boolean(b, offset))
             return Atom(Symbol(val, offset))
         raise ParserError
@@ -135,8 +136,9 @@ class Parser:
     def parse_list(self, token: Token) -> List:
         res = []
         nxt = token
-        while (not is_tok_kind(nxt, TokenKind.EOF)
-                and not is_tok_kind(nxt, TokenKind.RIGHTPAR)):
+        while not is_tok_kind(nxt, TokenKind.EOF) and not is_tok_kind(
+            nxt, TokenKind.RIGHTPAR
+        ):
             res.append(self.parse_sexp(nxt))
             nxt = next(self.tokens)
         if is_tok_kind(nxt, TokenKind.EOF):

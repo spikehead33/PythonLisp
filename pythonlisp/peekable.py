@@ -1,8 +1,7 @@
 from collections import deque
-from typing import Optional, Generic, Generator, TypeVar
+from typing import Generator, Generic, Optional, TypeVar
 
-
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Peekable(Generic[T]):
@@ -24,9 +23,9 @@ class Peekable(Generic[T]):
 
     def peekn(self, n: int) -> Optional[T]:
         if len(self.__peekq) > n:
-            return self.__peekq[n-1]
+            return self.__peekq[n - 1]
         rest = n - len(self.__peekq)
-        
+
         for _ in range(rest):
             nxtitem = next(self.__generator)
             self.__peekq.append(nxtitem)
