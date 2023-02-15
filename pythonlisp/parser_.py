@@ -8,93 +8,54 @@ Atom        := Number | String | Symbol
 """
 
 from dataclasses import dataclass
-from typing import Generator, Optional, Union
+from typing import Generator, NewType, Optional, Union
 
-from pythonlisp.peekable import Peekable
-from pythonlisp.tokenizer import (Lexeme, Offset, Token, TokenKind, Value,
-                                  tokenize)
+from pythonlisp.tokenizer import Offset, Token, Tokenizer, TokenKind
 
 
-def is_tok_kind(token: Token, kind: TokenKind) -> bool:
-    return token[0] == kind
-
-
-def tok_lexeme(token: Token) -> Lexeme:
-    return token[1]
-
-
-def tok_val(token: Token) -> Value:
-    return token[2]
-
-
-def tok_offset(token: Token) -> Offset:
-    return token[3]
-
-
-class AstNode:
+class SExp:
     pass
 
 
 @dataclass(frozen=True)
-class Number(AstNode):
-    val: Union[float, int]
-    pos: Optional[Offset]
+class Number(SExp):
+    val: int | float
+    pos: Offset
 
     def __repr__(self) -> str:
-        return f"Number({self.val})"
+        return f"{self.val}"
 
 
 @dataclass(frozen=True)
-class String(AstNode):
+class String(SExp):
     val: str
-    pos: Optional[Offset]
+    pos: Offset
 
     def __repr__(self) -> str:
-        return f"String({self.val})"
+        return f"{self.val}"
 
 
 @dataclass(frozen=True)
-class Symbol(AstNode):
+class Boolean(SExp):
+    val: bool
+    pos: Offset
+
+    def __repr__(self) -> str:
+        return f"{self.val})"
+
+
+@dataclass(frozen=True)
+class Symbol(SExp):
     val: str
-    pos: Optional[Offset]
+    pos: Offset
 
     def __repr__(self) -> str:
         return f"Symbol({self.val})"
 
 
-@dataclass(frozen=True)
-class Boolean(AstNode):
-    val: bool
-    pos: Optional[Offset]
-
+class List(list, SExp):
     def __repr__(self) -> str:
-        return f"Boolean({self.val})"
-
-
-@dataclass
-class Lisp(AstNode):
-    sexps: list["SExp"]
-
-
-@dataclass
-class SExp(AstNode):
-    exp: Union["Atom", "List"]
-
-
-@dataclass
-class Atom(AstNode):
-    value: Number | String | Symbol | Boolean
-
-
-# @dataclass
-# class Pair(AstNode):
-#     fst: SExp
-#     snd: SExp
-
-
-@dataclass
-class List(AstNode):
-    lst: list[SExp]
+        return super().__repr__().replace("[", "(").replace("]", ")").replace(",", "")
 
 
 class ParserError(Exception):
@@ -102,59 +63,47 @@ class ParserError(Exception):
 
 
 class Parser:
-    tokens: Generator[Token, None, None] | None = None
+    tokenizer: Tokenizer
+    tokens: Optional[Generator[Token, None, None]]
 
-    def parse(self, source: str) -> Lisp:
-        self.tokens = tokenize(source)
+    def __init__(self) -> None:
+        self.tokenizer = Tokenizer()
+        self.tokens = None
+
+    def parse(self, source: str) -> list[SExp]:
+        self.tokens = self.tokenizer.tokenize(source)
         res = []
         nxt = next(self.tokens)
-        while not is_tok_kind(nxt, TokenKind.EOF):
+        while nxt.kind != TokenKind.EOF:
             s_exp = self.parse_sexp(nxt)
             res.append(s_exp)
             nxt = next(self.tokens)
-        return Lisp(res)
+        return res
 
-    def parse_sexp(self, token: Token) -> SExp:
-        if (
-            is_tok_kind(token, TokenKind.NUMBER)
-            or is_tok_kind(token, TokenKind.STRING)
-            or is_tok_kind(token, TokenKind.SYMBOL)
-        ):
-            return SExp(self.parse_atom(token))
-        elif is_tok_kind(token, TokenKind.RIGHTPAR):
-            raise ParserError
-        elif is_tok_kind(token, TokenKind.EOF):
-            raise ParserError
-        elif is_tok_kind(token, TokenKind.LEFTPAR):
+    def parse_sexp(self, token: Token):
+        offset = token.offset
+        if token.kind == TokenKind.NUMBER:
+            return Number(token.value, offset)
+        elif token.kind == TokenKind.STRING:
+            return String(token.value, offset)
+        elif token.kind == TokenKind.SYMBOL:
+            if token.lexeme == "#t":
+                return Boolean(True, offset)
+            elif token.lexeme == "#f":
+                return Boolean(False, offset)
+            return Symbol(token.lexeme, offset)
+        elif token.kind == TokenKind.RIGHTPAREN:
+            raise ParserError(f"Error: unexpected ')' found in {offset}")
+        elif token.kind == TokenKind.LEFTPAREN:
             nxt = next(self.tokens)
-            return SExp(self.parse_list(nxt))
-        else:
-            raise ParserError
-
-    def parse_atom(self, token: Token) -> Atom:
-        val = tok_val(token)
-        offset = tok_offset(token)
-        if is_tok_kind(token, TokenKind.NUMBER):
-            return Atom(Number(val, offset))
-        elif is_tok_kind(token, TokenKind.STRING):
-            return Atom(String(val, offset))
-        elif is_tok_kind(token, TokenKind.SYMBOL):
-            if val == "#t" or val == "#f":
-                b = True if val == "#t" else False
-                return Atom(Boolean(b, offset))
-            return Atom(Symbol(val, offset))
-        raise ParserError
+            return self.parse_list(nxt)
 
     def parse_list(self, token: Token) -> List:
         res = []
         nxt = token
-        while not is_tok_kind(nxt, TokenKind.EOF) and not is_tok_kind(
-            nxt, TokenKind.RIGHTPAR
-        ):
+        while nxt.kind != TokenKind.EOF and nxt.kind != TokenKind.RIGHTPAREN:
             res.append(self.parse_sexp(nxt))
             nxt = next(self.tokens)
-        if is_tok_kind(nxt, TokenKind.EOF):
-            raise ParserError
-        if not is_tok_kind(nxt, TokenKind.RIGHTPAR):
-            raise ParserError
+        if nxt.kind != TokenKind.RIGHTPAREN:
+            raise ParserError(f"Error: unclosed parenthesis found in {token.offset}")
         return List(res)

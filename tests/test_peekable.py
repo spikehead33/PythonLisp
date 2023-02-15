@@ -1,5 +1,6 @@
 from pythonlisp.peekable import Peekable
 
+
 def test_peekable():
     items = (i for i in range(100))
     p = Peekable(items)
@@ -9,4 +10,3 @@ def test_peekable():
     assert next(p) == 1
     assert next(p) == 2
     assert p.peekn(3) == 5
-    
