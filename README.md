@@ -3,7 +3,6 @@
 This project use poetry as the package manager. Therefore, installing poetry will be the prerequisite of running and executing of this project.
 
 ## Demo
----
 Running PythonLisp with Repl
 ```
 $ poetry shell  # invoking the poetry environment
