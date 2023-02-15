@@ -18,11 +18,14 @@ def repl():
     print()
     while True:
         print("\u03BB  ", end="")
-        line = input()
-        if line == ":exit":
-            print("Bye!!!")
-            return
-        print(interpreter.interpret(line))
+        try:
+            line = input()
+            if line == ":exit":
+                print("Bye!!!")
+                return
+            print(interpreter.interpret(line))
+        except Exception as e:
+            print(e)
 
 
 def run(filename):

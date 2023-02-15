@@ -40,11 +40,17 @@ class Number(AstNode):
     val: Union[float, int]
     pos: Optional[Offset]
 
+    def __repr__(self) -> str:
+        return f"Number({self.val})"
+
 
 @dataclass(frozen=True)
 class String(AstNode):
     val: str
     pos: Optional[Offset]
+
+    def __repr__(self) -> str:
+        return f"String({self.val})"
 
 
 @dataclass(frozen=True)
@@ -52,11 +58,17 @@ class Symbol(AstNode):
     val: str
     pos: Optional[Offset]
 
+    def __repr__(self) -> str:
+        return f"Symbol({self.val})"
+
 
 @dataclass(frozen=True)
 class Boolean(AstNode):
     val: bool
     pos: Optional[Offset]
+
+    def __repr__(self) -> str:
+        return f"Boolean({self.val})"
 
 
 @dataclass
@@ -66,7 +78,7 @@ class Lisp(AstNode):
 
 @dataclass
 class SExp(AstNode):
-    exp: Union["Atom", "Pair", "List"]
+    exp: Union["Atom", "List"]
 
 
 @dataclass
@@ -74,10 +86,10 @@ class Atom(AstNode):
     value: Number | String | Symbol | Boolean
 
 
-@dataclass
-class Pair(AstNode):
-    fst: SExp
-    snd: SExp
+# @dataclass
+# class Pair(AstNode):
+#     fst: SExp
+#     snd: SExp
 
 
 @dataclass
