@@ -2,7 +2,7 @@ import math
 import operator as op
 import string
 from functools import reduce
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from pythonlisp.parser_ import (AstNode, Atom, Boolean, Lisp, List, Number,
                                 Parser, SExp, String, Symbol)
@@ -58,22 +58,31 @@ class Env:
         )
         return env
 
-    def find(self, symbol: Symbol) -> Optional[Any]:
-        var = self.env.get(symbol.val)
-        if var:
+    def find(self, key: str) -> Optional[Any]:
+        var = self.env.get(key)
+        if (
+            var is not None
+        ):  # when the var is 0, simply using if var will result in error
             return var
         elif not self.parent:
             return None
-        return self.parent.find(symbol)
+        return self.parent.find(key)
 
     def add(self, key: str, value: Any):
         self.env[key] = value
 
 
 class FunctionDef:
-    def __init__(self, parms, body):
-        self.parms = parms
+    def __init__(self, params, body, eval, env: Env):
+        self.params = params
         self.body = body
+        self.eval = eval
+        self.env = env
+
+    def __call__(self, *args) -> Any:
+        env_ = Env(parent=self.env)
+        env_.env.update({k: v for k, v in zip(self.params, args)})
+        return self.eval(self.body, env_)
 
 
 class Interpretor:
@@ -84,6 +93,12 @@ class Interpretor:
         self.parser = Parser()
         self.env = Env()
 
+    def get_symbol_from_sexp(self, sexp):
+        return sexp.exp.value.val
+
+    def get_list_from_sexp(self, sexp):
+        return sexp.exp.lst
+
     def interpret(self, source: str):
         ast = self.parser.parse(source)
         result = None
@@ -91,28 +106,32 @@ class Interpretor:
             result = self.eval_sexp(sexp, self.env)
         return result
 
-    def eval_sexp(self, sexp: SExp, env):
+    def eval_sexp(self, sexp: SExp, env: Env):
         exp = sexp.exp
         if isinstance(exp, Atom):
-            return self.eval_atom(exp, env)
+            val = exp.value.val
+            if isinstance(exp.value, Symbol):
+                s = env.find(val)
+                if s is None:
+                    raise RuntimeError(
+                        f"Error: Identifier not found {val}, env: {env.env}"
+                    )
+                return s
+            return val
         elif isinstance(exp, List):
-            self.eval_list(exp, env)
+            return self.eval_list(exp, env)
         else:
             raise RuntimeError
-
-    def eval_atom(self, atom: Atom, env):
-        value = atom.value
-        return value.val
 
     def eval_list(self, xs: List, env):
         lst = xs.lst
         argc = len(lst)
         if argc == 0:
             return xs
-        op = self.eval_sexp(lst[0], env)
+        op = self.get_symbol_from_sexp(lst[0])
         if op == "define":
             if argc != 3:
-                raise RuntimeError(f"Expect 3 arguments but {argc} were given")
+                raise RuntimeError
             return self.define(lst, env)
         elif op == "if":
             return self.if_(lst, env)
@@ -126,8 +145,16 @@ class Interpretor:
             return self.call(lst, env)
 
     def define(self, lst: list[Any], env: Env):
-        id_ = self.eval_sexp(lst[1], env)
-        if not isinstance(id_, Symbol):
+        id_ = self.get_symbol_from_sexp(lst[1])
+        if not isinstance(id_, str):
+            raise RuntimeError
+        env.add(id_, self.eval_sexp(lst[2], env))
+
+    def set_band(self, lst: list[Any], env: Env):
+        id_ = self.get_symbol_from_sexp(lst[1])
+        if not isinstance(id_, str):
+            raise RuntimeError
+        if not env.find(id_):
             raise RuntimeError
         env.add(id_, self.eval_sexp(lst[2], env))
 
@@ -140,30 +167,21 @@ class Interpretor:
         return self.eval_sexp(failure, env)
 
     def call(self, lst: list[Any], env: Env):
-        id_ = lst[1]
-        proc = self.env.find(id_)
+        id_ = self.get_symbol_from_sexp(lst[0])
+        proc = env.find(id_)
         if not proc:
-            raise RuntimeError
+            raise RuntimeError(f"undefined symbol `{id_}` found")
         args = [self.eval_sexp(arg, env) for arg in lst[1:]]
-        new_env = Env(env)
-        new_env.env.update({k: v for k, v in zip(proc.params, args)})
-        return self.eval_sexp(proc.body, new_env)
+        return proc(*args)
+
+    def procedure(self, lst: list[Any], env):
+        lst_ = self.get_list_from_sexp(lst[1])
+        params = [self.get_symbol_from_sexp(param) for param in lst_]
+        body = lst[2]
+        return FunctionDef(params, body, self.eval_sexp, env)
 
     def quote(self, lst: list[Any], env: Env):
         items = lst[1]
         if not isinstance(items, List):
             raise RuntimeError
         return items
-
-    def set_band(self, lst: list[Any], env: Env):
-        id_ = lst[1]
-        if not isinstance(id_, Symbol):
-            raise RuntimeError
-        if not env.find(id_):
-            raise RuntimeError
-        env.add(id_.val, self.eval_sexp(lst[2], env))
-
-    def procedure(self, lst: list[Any], env):
-        param = lst[1]
-        body = lst[2]
-        return FunctionDef(param, body)
