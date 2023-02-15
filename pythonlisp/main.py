@@ -1,7 +1,7 @@
 import argparse
 from datetime import datetime
 
-import pkg_resources
+import importlib.metadata
 
 from pythonlisp.interpreter import Interpreter
 
@@ -22,10 +22,11 @@ def repl():
     print(
         "*"
         + " " * 10
-        + f"Version: {pkg_resources.get_distribution('pythonlisp').version}"
+        + f"Version: {importlib.metadata.version('pythonlisp')}"
         + " " * 24
         + "*"
     )
+    print("*" + " " * 48 + "*")
     print("*" * 50)
     print()
     print()
