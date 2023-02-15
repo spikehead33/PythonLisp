@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pythonlisp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Lisp implementation in Python"
 authors = ["spikehead33 <ccspikehead33@gmail.com>"]
 readme = "README.md"

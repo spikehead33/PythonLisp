@@ -1,4 +1,4 @@
-from pythonlisp.tokenizer import tokenize, TokenKind, Offset
+from pythonlisp.tokenizer import Offset, Token, Tokenizer, TokenKind
 
 
 def test_tokenize():
@@ -10,41 +10,46 @@ x
 s
 (define f (lambda (x y) (+ x y)))
 """
+    tokenizer = Tokenizer()
     expect1 = [
-        (TokenKind.LEFTPAR, "(", None, Offset(2, 1)),
-        (TokenKind.SYMBOL, 'define', 'define', Offset(2, 2)),
-        (TokenKind.SYMBOL, 'x', 'x', Offset(2, 9)),
-        (TokenKind.NUMBER, '10', 10, Offset(2, 11)),
-        (TokenKind.RIGHTPAR, ")", None, Offset(2, 13)),
-        (TokenKind.LEFTPAR, "(", None, Offset(3, 1)),
-        (TokenKind.SYMBOL, 'define', 'define', Offset(3, 2)),
-        (TokenKind.SYMBOL, 'y', 'y', Offset(3, 9)),
-        (TokenKind.NUMBER, '1.1', 1.1, Offset(3, 11)),
-        (TokenKind.RIGHTPAR, ")", None, Offset(3, 14)),
-        (TokenKind.LEFTPAR, "(", None, Offset(4, 1)),
-        (TokenKind.SYMBOL, 'define', 'define', Offset(4, 2)),
-        (TokenKind.SYMBOL, 's', 's', Offset(4, 9)),
-        (TokenKind.STRING, '\"This is the String\"', "This is the String", Offset(4, 11)),
-        (TokenKind.RIGHTPAR, ")", None, Offset(4, 31)),
-        (TokenKind.SYMBOL, "x", "x", Offset(5, 1)),
-        (TokenKind.SYMBOL, "s", "s", Offset(6, 1)),
-        (TokenKind.LEFTPAR, "(", None, Offset(7, 1)),
-        (TokenKind.SYMBOL, 'define', 'define', Offset(7, 2)),
-        (TokenKind.SYMBOL, 'f', 'f', Offset(7, 9)),
-        (TokenKind.LEFTPAR, '(', None, Offset(7, 11)),
-        (TokenKind.SYMBOL, "lambda", 'lambda', Offset(7, 12)),
-        (TokenKind.LEFTPAR, '(', None, Offset(7, 19)),
-        (TokenKind.SYMBOL, 'x', 'x', Offset(7, 20)),
-        (TokenKind.SYMBOL, 'y', 'y', Offset(7, 22)),
-        (TokenKind.RIGHTPAR, ')', None, Offset(7, 23)),
-        (TokenKind.LEFTPAR, '(', None, Offset(7, 25)),
-        (TokenKind.SYMBOL, '+', '+', Offset(7, 26)),
-        (TokenKind.SYMBOL, 'x', 'x', Offset(7, 28)),
-        (TokenKind.SYMBOL, 'y', 'y', Offset(7, 30)),
-        (TokenKind.RIGHTPAR, ')', None, Offset(7, 31)),
-        (TokenKind.RIGHTPAR, ')', None, Offset(7, 32)),
-        (TokenKind.RIGHTPAR, ')', None, Offset(7, 33)),
-        (TokenKind.EOF, '', None, Offset(lineno=8, column=1))
-        
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(2, 1)),
+        Token(TokenKind.SYMBOL, "define", None, Offset(2, 2)),
+        Token(TokenKind.SYMBOL, "x", None, Offset(2, 9)),
+        Token(TokenKind.NUMBER, "10", 10, Offset(2, 11)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(2, 13)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(3, 1)),
+        Token(TokenKind.SYMBOL, "define", None, Offset(3, 2)),
+        Token(TokenKind.SYMBOL, "y", None, Offset(3, 9)),
+        Token(TokenKind.NUMBER, "1.1", 1.1, Offset(3, 11)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(3, 14)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(4, 1)),
+        Token(TokenKind.SYMBOL, "define", None, Offset(4, 2)),
+        Token(TokenKind.SYMBOL, "s", None, Offset(4, 9)),
+        Token(
+            TokenKind.STRING,
+            '"This is the String"',
+            "This is the String",
+            Offset(4, 11),
+        ),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(4, 31)),
+        Token(TokenKind.SYMBOL, "x", None, Offset(5, 1)),
+        Token(TokenKind.SYMBOL, "s", None, Offset(6, 1)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(7, 1)),
+        Token(TokenKind.SYMBOL, "define", None, Offset(7, 2)),
+        Token(TokenKind.SYMBOL, "f", None, Offset(7, 9)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(7, 11)),
+        Token(TokenKind.SYMBOL, "lambda", None, Offset(7, 12)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(7, 19)),
+        Token(TokenKind.SYMBOL, "x", None, Offset(7, 20)),
+        Token(TokenKind.SYMBOL, "y", None, Offset(7, 22)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(7, 23)),
+        Token(TokenKind.LEFTPAREN, "(", None, Offset(7, 25)),
+        Token(TokenKind.SYMBOL, "+", None, Offset(7, 26)),
+        Token(TokenKind.SYMBOL, "x", None, Offset(7, 28)),
+        Token(TokenKind.SYMBOL, "y", None, Offset(7, 30)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(7, 31)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(7, 32)),
+        Token(TokenKind.RIGHTPAREN, ")", None, Offset(7, 33)),
+        Token(TokenKind.EOF, "", None, Offset(lineno=8, column=1)),
     ]
-    assert list(tokenize(test1)) == expect1
+    assert list(tokenizer.tokenize(test1)) == expect1
