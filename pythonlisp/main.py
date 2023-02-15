@@ -1,6 +1,8 @@
 import argparse
 from datetime import datetime
 
+import pkg_resources
+
 from pythonlisp.interpreter import Interpretor
 
 
@@ -14,7 +16,7 @@ def repl():
     interpreter = Interpretor()
     print("Welcome to PythonLisp!!!!!")
     print(f"Date: {datetime.now()}")
-    print("Version:")
+    print(f"Version: {pkg_resources.get_distribution('pythonlisp').version}")
     print()
     while True:
         print("\u03BB  ", end="")

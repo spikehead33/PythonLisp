@@ -54,6 +54,7 @@ class Env:
                 "boolean?": lambda x: isinstance(x, Boolean),
                 "null?": lambda xs: xs == List([]),
                 "procedure?": callable,
+                "print": print
             }
         )
         return env
