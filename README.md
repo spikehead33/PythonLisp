@@ -7,6 +7,10 @@ An inferior version of lispy https://norvig.com/lispy.html
 This project use poetry as the package manager. Therefore, installing poetry will be the prerequisite of running and executing of this project.
 
 ## Demo
+Initializing the project
+```
+$ poetry install
+```
 Running tests
 ```
 $ poetry run pytest -vv
