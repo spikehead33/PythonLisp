@@ -64,11 +64,10 @@ class ParserError(Exception):
 
 class Parser:
     tokenizer: Tokenizer
-    tokens: Optional[Generator[Token, None, None]]
+    tokens: Generator[Token, None, None]
 
     def __init__(self) -> None:
         self.tokenizer = Tokenizer()
-        self.tokens = None
 
     def parse(self, source: str) -> list[SExp]:
         self.tokens = self.tokenizer.tokenize(source)

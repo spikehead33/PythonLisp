@@ -73,9 +73,14 @@ class Env:
         var = self.env.get(key)
         if var is not None:
             return var
-        elif not self.parent:
-            return None
-        return self.parent.find(key)
+
+        env = self.parent
+        while env:
+            var = env.env.get(key)
+            if var is not None:
+                return var
+        return None
+            
 
     def add(self, key: str, value: Any):
         self.env[key] = value
@@ -120,6 +125,8 @@ class Interpreter:
             value = env.find(sexp.val)
             if value is None:
                 raise RuntimeError(f"Error: symbol '{sexp.val}' not found")
+            # add the symbol to the current environment for cache
+            env.add(sexp.val, value)
             return value
         elif isinstance(sexp, List):
             return self.eval_list(sexp, env)
