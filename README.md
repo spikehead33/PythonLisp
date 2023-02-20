@@ -36,6 +36,8 @@ None
 λ (succ 9)
 10
 λ (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1))))))
+None
+λ (fact 10)
 3628800
 λ (car (quote (1 2 3 4 5)))
 1
@@ -45,7 +47,7 @@ None
 None
 λ (map succ (list 1 2 4 5 6))
 (2 3 5 6 7)
-λ (reduce (list 1 2 3 4 5))
+λ (reduce + (list 1 2 3 4 5))
 15
 λ (define twice (lambda (x) (* 2 x)))
 None
