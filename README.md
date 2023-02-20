@@ -4,7 +4,7 @@ An inferior version of lispy https://norvig.com/lispy.html
 * more lines of code
 * more complex
 ## Requirement
-This project use poetry as the package manager. Therefore, installing poetry will be the prerequisite of running and executing of this project.
+This project use poetry as the package manager. Therefore, installing poetry is needed for running and executing of this project.
 
 ## Demo
 Initializing the project
