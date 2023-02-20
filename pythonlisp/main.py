@@ -1,7 +1,6 @@
 import argparse
-from datetime import datetime
-
 import importlib.metadata
+from datetime import datetime
 
 from pythonlisp.interpreter import Interpreter
 
