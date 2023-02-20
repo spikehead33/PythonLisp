@@ -79,8 +79,8 @@ class Env:
             var = env.env.get(key)
             if var is not None:
                 return var
+            env = env.parent
         return None
-            
 
     def add(self, key: str, value: Any):
         self.env[key] = value
