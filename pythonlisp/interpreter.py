@@ -70,11 +70,7 @@ class Env:
         return env
 
     def find(self, key: str) -> Optional[Any]:
-        var = self.env.get(key)
-        if var is not None:
-            return var
-
-        env = self.parent
+        env = self
         while env:
             var = env.env.get(key)
             if var is not None:
