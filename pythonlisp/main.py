@@ -44,7 +44,10 @@ def repl():
 def run(filename):
     with open(filename, "r") as f:
         program = f.read()
-        Interpreter().interpret(program)
+        try:
+            Interpreter().interpret(program)
+        except Exception as e:
+            print(e)
 
 
 def main():
